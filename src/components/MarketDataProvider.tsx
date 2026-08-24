@@ -58,11 +58,18 @@ export function MarketDataProvider({
   }, []);
 
   useEffect(() => {
+    const empty = initial.equities.length === 0 && initial.bonds.length === 0;
+    const kickoff = window.setTimeout(() => {
+      if (empty) void refresh();
+    }, 0);
     const timer = window.setInterval(() => {
       void refresh();
     }, 30_000);
-    return () => window.clearInterval(timer);
-  }, [refresh]);
+    return () => {
+      window.clearTimeout(kickoff);
+      window.clearInterval(timer);
+    };
+  }, [initial.bonds.length, initial.equities.length, refresh]);
 
   const value = useMemo(
     () => ({ ...snapshot, refresh }),

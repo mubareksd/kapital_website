@@ -8,12 +8,14 @@ import "./globals.css";
 const sans = Sora({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const serif = Instrument_Serif({
   variable: "--font-serif",
   subsets: ["latin"],
   weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -46,7 +48,7 @@ export const viewport: Viewport = {
 export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const ticker = await loadTickerSnapshot();
+  const ticker = await loadTickerSnapshot({ maxWaitMs: 800 });
 
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`}>

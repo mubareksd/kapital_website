@@ -1,4 +1,4 @@
-import { marlinConnected, marlinGetJson } from "./client";
+import { hasMarlinSession, marlinGetJson } from "./client";
 import { asList } from "./payload";
 import { filterCandlesByWindow, resolveChartRange } from "./chart-range";
 import type { Candle, MarketStatus, PublicQuote, Quote, TickerSnapshot } from "./types";
@@ -11,6 +11,24 @@ const watchlistCache: { entry: CacheEntry<Quote[]> | null; error: string | null 
 };
 const candleCache = new Map<string, CacheEntry<Candle[]>>();
 const emsCache = new Map<string, number>();
+let watchlistInflight: Promise<Quote[]> | null = null;
+let snapshotHold: { value: TickerSnapshot; freshUntil: number } | null = null;
+let snapshotInflight: Promise<TickerSnapshot> | null = null;
+
+function emptySnapshot(error: string | null = null): TickerSnapshot {
+  return {
+    data: [],
+    equities: [],
+    bonds: [],
+    meta: {
+      broker_connected: false,
+      source: "offline",
+      exchange: "ESX",
+      market: "MAINBOARD",
+      error,
+    },
+  };
+}
 
 function cacheTtlMs(): number {
   const raw = Number(process.env.MARLIN_CACHE_TTL_MS ?? "20000");
@@ -196,54 +214,83 @@ export function mapQuotes(
   return quotes;
 }
 
-async function fetchLiveWatchlist(): Promise<Quote[]> {
+function mergeQuotes(target: Record<string, Quote>, rows: Quote[]): void {
+  for (const quote of rows) {
+    target[quote.symbol] = quote;
+  }
+}
+
+async function fetchWatchlistByAssetClass(): Promise<Quote[]> {
   const quotes: Record<string, Quote> = {};
   const classes = asList(await marlinGetJson("/asset-class/"));
-
-  for (const classRaw of classes) {
-    if (!classRaw || typeof classRaw !== "object") continue;
+  const jobs = classes.map(async (classRaw) => {
+    if (!classRaw || typeof classRaw !== "object") return [] as Quote[];
     const klass = classRaw as Record<string, unknown>;
     const assetId = klass.assetId ?? klass.id;
-    if (assetId === null || assetId === undefined) continue;
-    const rows = await marlinGetJson(`/securities/allSecuritiesWStats/assetClass/${assetId}`);
-    for (const quote of mapQuotes(rows, assetCode(klass), "live")) {
-      quotes[quote.symbol] = quote;
+    if (assetId === null || assetId === undefined) return [];
+    try {
+      const rows = await marlinGetJson(
+        `/securities/allSecuritiesWStats/assetClass/${assetId}`,
+      );
+      return mapQuotes(rows, assetCode(klass), "live");
+    } catch {
+      return [];
     }
-  }
+  });
 
-  if (Object.keys(quotes).length === 0) {
-    const catalog = await marlinGetJson("/securities/");
-    for (const quote of mapQuotes(catalog, null, "live")) {
-      quotes[quote.symbol] = quote;
-    }
+  for (const batch of await Promise.all(jobs)) {
+    mergeQuotes(quotes, batch);
   }
-
-  if (Object.keys(quotes).length === 0) {
-    const stats = await marlinGetJson("/security/symbol/stats-all/exch/ESX");
-    for (const quote of mapQuotes(stats, null, "live")) {
-      quotes[quote.symbol] = quote;
-    }
-  }
-
   return Object.values(quotes);
 }
 
-export async function getWatchlist(): Promise<Quote[]> {
-  const ttl = cacheTtlMs();
-  if (watchlistCache.entry && watchlistCache.entry.expiresAt > Date.now()) {
-    return watchlistCache.entry.value;
+async function fetchLiveWatchlist(): Promise<Quote[]> {
+  try {
+    const stats = await marlinGetJson("/security/symbol/stats-all/exch/ESX");
+    const quotes = mapQuotes(stats, null, "live");
+    if (quotes.length > 0) return quotes;
+  } catch {
+    // Fall through to the slower per-class path.
   }
 
-  try {
-    const quotes = await fetchLiveWatchlist();
-    watchlistCache.entry = { value: quotes, expiresAt: Date.now() + ttl };
-    watchlistCache.error = null;
-    return quotes;
-  } catch (error) {
-    watchlistCache.error =
-      error instanceof Error ? error.message : "Market feed unavailable";
-    return watchlistCache.entry?.value ?? [];
+  const byClass = await fetchWatchlistByAssetClass();
+  if (byClass.length > 0) return byClass;
+
+  const catalog = await marlinGetJson("/securities/");
+  return mapQuotes(catalog, null, "live");
+}
+
+async function fetchAndStoreWatchlist(): Promise<Quote[]> {
+  if (watchlistInflight) return watchlistInflight;
+
+  watchlistInflight = (async () => {
+    try {
+      const quotes = await fetchLiveWatchlist();
+      watchlistCache.entry = { value: quotes, expiresAt: Date.now() + cacheTtlMs() };
+      watchlistCache.error = null;
+      return quotes;
+    } catch (error) {
+      watchlistCache.error =
+        error instanceof Error ? error.message : "Market feed unavailable";
+      return watchlistCache.entry?.value ?? [];
+    } finally {
+      watchlistInflight = null;
+    }
+  })();
+
+  return watchlistInflight;
+}
+
+export async function getWatchlist(force = false): Promise<Quote[]> {
+  const cached = watchlistCache.entry;
+  if (!force && cached && cached.expiresAt > Date.now()) {
+    return cached.value;
   }
+  if (!force && cached) {
+    void fetchAndStoreWatchlist();
+    return cached.value;
+  }
+  return fetchAndStoreWatchlist();
 }
 
 export async function getQuote(symbol: string): Promise<Quote | null> {
@@ -260,8 +307,8 @@ export function publicAssetKind(symbol: string, assetClass = ""): "equity" | "bo
   return "equity";
 }
 
-export async function getMarketStatus(): Promise<MarketStatus> {
-  const live = await marlinConnected();
+export async function getMarketStatus(quoteCount = 0): Promise<MarketStatus> {
+  const live = quoteCount > 0 || hasMarlinSession();
   return {
     broker_connected: live,
     source: live ? "live" : "offline",
@@ -277,13 +324,68 @@ export async function getPublicTape(): Promise<{
   bonds: PublicQuote[];
   status: MarketStatus;
 }> {
-  const quotes = await getWatchlist();
-  quotes.sort((a, b) => a.symbol.localeCompare(b.symbol));
+  return toPublicTape(await getWatchlist());
+}
 
+function startBackgroundRefresh(): void {
+  const g = globalThis as typeof globalThis & {
+    __kapitalTickerWarm?: ReturnType<typeof setInterval>;
+  };
+  if (g.__kapitalTickerWarm) return;
+  const interval = Math.max(cacheTtlMs(), 15_000);
+  g.__kapitalTickerWarm = setInterval(() => {
+    void refreshTickerSnapshot();
+  }, interval);
+}
+
+async function refreshTickerSnapshot(): Promise<TickerSnapshot> {
+  if (snapshotInflight) return snapshotInflight;
+
+  snapshotInflight = (async () => {
+    try {
+      const tape = await getPublicTapeFresh();
+      const value: TickerSnapshot = {
+        data: tape.quotes,
+        equities: tape.equities,
+        bonds: tape.bonds,
+        meta: tape.status,
+      };
+      snapshotHold = { value, freshUntil: Date.now() + cacheTtlMs() };
+      startBackgroundRefresh();
+      return value;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Market feed unavailable";
+      if (snapshotHold) return snapshotHold.value;
+      return emptySnapshot(message);
+    } finally {
+      snapshotInflight = null;
+    }
+  })();
+
+  return snapshotInflight;
+}
+
+async function getPublicTapeFresh(): Promise<{
+  quotes: PublicQuote[];
+  equities: PublicQuote[];
+  bonds: PublicQuote[];
+  status: MarketStatus;
+}> {
+  const quotes = await getWatchlist(true);
+  return toPublicTape(quotes);
+}
+
+function toPublicTape(quotes: Quote[]): {
+  quotes: PublicQuote[];
+  equities: PublicQuote[];
+  bonds: PublicQuote[];
+  status: MarketStatus;
+} {
+  const sorted = [...quotes].sort((a, b) => a.symbol.localeCompare(b.symbol));
   const equities: PublicQuote[] = [];
   const bonds: PublicQuote[] = [];
 
-  for (const quote of quotes) {
+  for (const quote of sorted) {
     const pct = quote.change_pct;
     const last = quote.last;
     const direction: PublicQuote["direction"] =
@@ -308,38 +410,47 @@ export async function getPublicTape(): Promise<{
     else equities.push(item);
   }
 
+  const live = quotes.length > 0 || hasMarlinSession();
   return {
     quotes: equities,
     equities,
     bonds,
-    status: await getMarketStatus(),
+    status: {
+      broker_connected: live,
+      source: live ? "live" : "offline",
+      exchange: "ESX",
+      market: "MAINBOARD",
+      error: live ? null : watchlistCache.error,
+    },
   };
 }
 
-export async function loadTickerSnapshot(): Promise<TickerSnapshot> {
-  try {
-    const tape = await getPublicTape();
-    return {
-      data: tape.quotes,
-      equities: tape.equities,
-      bonds: tape.bonds,
-      meta: tape.status,
-    };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Market feed unavailable";
-    return {
-      data: [],
-      equities: [],
-      bonds: [],
-      meta: {
-        broker_connected: false,
-        source: "offline",
-        exchange: "ESX",
-        market: "MAINBOARD",
-        error: message,
-      },
-    };
+export function peekTickerSnapshot(): TickerSnapshot | null {
+  return snapshotHold?.value ?? null;
+}
+
+export async function loadTickerSnapshot(
+  options: { maxWaitMs?: number } = {},
+): Promise<TickerSnapshot> {
+  const now = Date.now();
+  if (snapshotHold && snapshotHold.freshUntil > now) {
+    return snapshotHold.value;
   }
+  if (snapshotHold) {
+    void refreshTickerSnapshot();
+    return snapshotHold.value;
+  }
+
+  const maxWaitMs = options.maxWaitMs ?? 800;
+  const refresh = refreshTickerSnapshot();
+  const timedOut = await Promise.race([
+    refresh.then(() => false),
+    new Promise<boolean>((resolve) => {
+      setTimeout(() => resolve(true), maxWaitMs);
+    }),
+  ]);
+  if (!timedOut) return refresh;
+  return snapshotHold?.value ?? emptySnapshot();
 }
 
 export function mapOhlcBars(rows: unknown): Candle[] {

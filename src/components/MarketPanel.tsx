@@ -39,15 +39,15 @@ export function MarketPanel({
   );
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("symbol");
-  const [symbol, setSymbol] = useState(
-    initialSymbol || equities[0]?.symbol || bonds[0]?.symbol || "",
-  );
+  const [pickedSymbol, setPickedSymbol] = useState(initialSymbol);
   const [range, setRange] = useState<ChartRangeId>(initialRange);
   const [candles, setCandles] = useState<Candle[]>(initialCandles);
   const [chartType, setChartType] = useState<"line" | "candle">("line");
   const [loadingChart, setLoadingChart] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const skipFirstCandleFetch = useRef(true);
+  const skipFirstCandleFetch = useRef(initialCandles.length > 0);
+  const symbol =
+    pickedSymbol || equities[0]?.symbol || bonds[0]?.symbol || "";
 
   const status = meta.broker_connected
     ? "Live ESX feed"
@@ -335,7 +335,7 @@ export function MarketPanel({
                     <tr
                       key={row.symbol}
                       className={row.symbol === symbol ? "is-active" : undefined}
-                      onClick={() => setSymbol(row.symbol)}
+                      onClick={() => setPickedSymbol(row.symbol)}
                     >
                       <td>
                         <strong>{row.symbol}</strong>

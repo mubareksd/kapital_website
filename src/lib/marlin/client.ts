@@ -20,8 +20,8 @@ function proxyUrl(): string {
 }
 
 function timeoutMs(): number {
-  const raw = Number(env("MARLIN_TIMEOUT_MS", "30000"));
-  return Number.isFinite(raw) && raw > 0 ? raw : 30000;
+  const raw = Number(env("MARLIN_TIMEOUT_MS", "12000"));
+  return Number.isFinite(raw) && raw > 0 ? raw : 12000;
 }
 
 function userAgent(): string {
@@ -178,6 +178,10 @@ export async function marlinConnected(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+export function hasMarlinSession(): boolean {
+  return Boolean(session && session.expiresAt > Date.now());
 }
 
 export function resetMarlinSession(): void {
