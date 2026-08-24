@@ -4,23 +4,6 @@ import { MarketPanel } from "@/components/MarketPanel";
 export default function Home() {
   return (
     <main>
-      <header className="site-header">
-        <div className="container nav">
-          <Link className="brand" href="/">
-            Kapital
-          </Link>
-          <nav className="nav-links" aria-label="Primary">
-            <a href="#board">Board</a>
-            <a href="#charts">Charts</a>
-            <a href="#about">About</a>
-            <a href="#features">Features</a>
-            <a href="#launch">Launch</a>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
-          </nav>
-        </div>
-      </header>
-
       <section className="hero">
         <div className="container hero-grid">
           <div>

@@ -9,20 +9,22 @@
   --accent-ink: #f3faf7;
   --up: #0b7a52;
   --down: #b4233a;
+  --mast-offset: 7rem;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--mast-offset) + 0.75rem);
 }
 
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
 }
 
 body {
   margin: 0;
+  overflow-x: clip;
   color: var(--ink);
   background:
     radial-gradient(1100px 500px at 10% -10%, rgba(13, 92, 77, 0.1), transparent 55%),
@@ -52,12 +54,135 @@ img {
   margin: 0 auto;
 }
 
-.site-header {
-  position: sticky;
+.mast {
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: rgba(244, 246, 243, 0.96);
+  box-shadow: 0 1px 0 rgba(197, 206, 198, 0.9);
+}
+
+.mast-spacer {
+  height: var(--mast-offset);
+  pointer-events: none;
+}
+
+.tape {
+  border-bottom: 1px solid var(--line);
+  background: rgba(244, 246, 243, 0.94);
+  backdrop-filter: blur(10px);
+}
+
+.tape-rail {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 2.5rem;
+  align-items: stretch;
+}
+
+.tape-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.9rem;
+  border-right: 1px solid var(--line);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tape-exchange {
+  color: var(--ink);
+}
+
+.tape-state {
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.tape-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.tape-dot.is-live {
+  background: var(--up);
+}
+
+.tape-dot.is-off {
+  background: var(--down);
+}
+
+.tape-viewport {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.tape-track {
+  display: flex;
+  width: max-content;
+  animation: tape-slide var(--tape-seconds, 36s) linear infinite;
+}
+
+.tape-run {
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+}
+
+.tape-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem 0.5rem 0.5rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  border-right: 1px solid var(--line);
+}
+
+.tape-item .inst-symbol {
+  letter-spacing: 0.04em;
+}
+
+.tape-px,
+.tape-chg {
+  font-variant-numeric: tabular-nums;
+}
+
+.tape-empty {
+  margin: 0;
+  padding: 0 1rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+@keyframes tape-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tape-track {
+    animation: none;
+  }
+}
+
+.site-header {
+  position: relative;
   z-index: 20;
   backdrop-filter: blur(10px);
-  background: rgba(244, 246, 243, 0.82);
+  background: rgba(244, 246, 243, 0.92);
   border-bottom: 1px solid rgba(197, 206, 198, 0.9);
 }
 
@@ -621,6 +746,11 @@ h3 {
   .nav {
     align-items: flex-start;
     padding: 1rem 0;
+  }
+
+  .mast-spacer {
+    height: auto;
+    min-height: var(--mast-offset);
   }
 
   .nav-links,

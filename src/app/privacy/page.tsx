@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export const metadata = {
   title: "Privacy · Kapital",
   description: "Privacy information for the temporary Kapital site.",
@@ -8,18 +6,6 @@ export const metadata = {
 export default function PrivacyPage() {
   return (
     <main className="legal-page">
-      <header className="site-header">
-        <div className="container nav">
-          <Link className="brand" href="/">
-            Kapital
-          </Link>
-          <nav className="nav-links" aria-label="Primary">
-            <Link href="/">Home</Link>
-            <Link href="/terms">Terms</Link>
-          </nav>
-        </div>
-      </header>
-
       <section className="legal-main">
         <article className="legal-card">
           <p className="section-label">Privacy</p>

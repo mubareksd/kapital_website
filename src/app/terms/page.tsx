@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export const metadata = {
   title: "Terms · Kapital",
   description: "Terms for the temporary Kapital site.",
@@ -8,18 +6,6 @@ export const metadata = {
 export default function TermsPage() {
   return (
     <main className="legal-page">
-      <header className="site-header">
-        <div className="container nav">
-          <Link className="brand" href="/">
-            Kapital
-          </Link>
-          <nav className="nav-links" aria-label="Primary">
-            <Link href="/">Home</Link>
-            <Link href="/privacy">Privacy</Link>
-          </nav>
-        </div>
-      </header>
-
       <section className="legal-main">
         <article className="legal-card">
           <p className="section-label">Terms</p>

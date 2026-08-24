@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Instrument_Serif, Sora } from "next/font/google";
+import { SiteMast } from "@/components/SiteMast";
 import "./globals.css";
 
 const sans = Sora({
@@ -38,7 +39,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`}>
-      <body>{children}</body>
+      <body>
+        <SiteMast />
+        {children}
+      </body>
     </html>
   );
 }
