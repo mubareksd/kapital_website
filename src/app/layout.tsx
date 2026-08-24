@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Sora } from "next/font/google";
 import { SiteMast } from "@/components/SiteMast";
 import "./globals.css";
@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   description:
     "Kapital is preparing retail access to Ethiopian Securities Exchange market data, orders, and portfolio tools in one mobile-first platform.",
   applicationName: "Kapital",
+  manifest: "/site.webmanifest",
   openGraph: {
     title: "Kapital · Trade ESX from your phone",
     description:
@@ -34,6 +35,10 @@ export const metadata: Metadata = {
     description:
       "Kapital is preparing retail access to Ethiopian Securities Exchange market data, orders, and portfolio tools.",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0D5C4D",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
