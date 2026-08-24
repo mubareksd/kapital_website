@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" fill="none" role="img" aria-label="Charts screen illustration">
+  <defs>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d5c4d" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#0b7a52" stop-opacity="0.06"/>
+    </linearGradient>
+  </defs>
+  <rect x="70" y="65" width="760" height="470" rx="26" fill="url(#g2)" stroke="#c5cec6"/>
+  <rect x="115" y="115" width="520" height="50" rx="16" fill="#ffffff" fill-opacity="0.7" stroke="#c5cec6"/>
+  <rect x="115" y="185" width="260" height="38" rx="14" fill="#c5cec6" opacity="0.35"/>
+  <rect x="390" y="185" width="435" height="38" rx="14" fill="#c5cec6" opacity="0.22"/>
+  <rect x="115" y="235" width="710" height="300" rx="22" fill="#ffffff" fill-opacity="0.55" stroke="#c5cec6"/>
+  <path d="M155 470 C240 400, 300 520, 385 450 C460 390, 510 490, 595 430 C680 370, 720 430, 785 390" stroke="#0b7a52" stroke-width="8" stroke-linecap="round" opacity="0.75"/>
+  <path d="M155 470 C240 440, 300 505, 385 480 C460 455, 510 505, 595 482 C680 460, 720 485, 785 470" stroke="#0d5c4d" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+  <rect x="135" y="255" width="80" height="12" rx="6" fill="#0b7a52" opacity="0.7"/>
+  <rect x="225" y="255" width="115" height="12" rx="6" fill="#c5cec6" opacity="0.55"/>
+</svg>
+

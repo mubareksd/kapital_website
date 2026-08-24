@@ -1,0 +1,44 @@
+import type { Metadata } from "next";
+import { Instrument_Serif, Sora } from "next/font/google";
+import "./globals.css";
+
+const sans = Sora({
+  variable: "--font-sans",
+  subsets: ["latin"],
+});
+
+const serif = Instrument_Serif({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://kapital.et"),
+  title: "Kapital · Trade ESX from your phone",
+  description:
+    "Kapital is preparing retail access to Ethiopian Securities Exchange market data, orders, and portfolio tools in one mobile-first platform.",
+  applicationName: "Kapital",
+  openGraph: {
+    title: "Kapital · Trade ESX from your phone",
+    description:
+      "A simple temporary site for Kapital while the retail trading platform is being prepared.",
+    url: "https://kapital.et",
+    siteName: "Kapital",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kapital · Trade ESX from your phone",
+    description:
+      "Kapital is preparing retail access to Ethiopian Securities Exchange market data, orders, and portfolio tools.",
+  },
+};
+
+export default function RootLayout({ children }: LayoutProps<"/">) {
+  return (
+    <html lang="en" className={`${sans.variable} ${serif.variable}`}>
+      <body>{children}</body>
+    </html>
+  );
+}
