@@ -450,7 +450,7 @@ export async function loadTickerSnapshot(
     }),
   ]);
   if (!timedOut) return refresh;
-  return snapshotHold?.value ?? emptySnapshot();
+  return peekTickerSnapshot() ?? emptySnapshot();
 }
 
 export function mapOhlcBars(rows: unknown): Candle[] {
