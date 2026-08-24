@@ -12,8 +12,7 @@ const defaultLinks = [
   { href: "/#board", label: "Board" },
   { href: "/#charts", label: "Charts" },
   { href: "/#about", label: "About" },
-  { href: "/#features", label: "Features" },
-  { href: "/#launch", label: "Launch" },
+  { href: "/#launch", label: "Contact" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
 ];
