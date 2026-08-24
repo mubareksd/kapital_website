@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { MarketTape } from "@/components/MarketTape";
 
 type SiteMastProps = {
@@ -20,6 +20,8 @@ const defaultLinks = [
 export function SiteMast({ links = defaultLinks }: SiteMastProps) {
   const mastRef = useRef<HTMLElement | null>(null);
   const spacerRef = useRef<HTMLDivElement | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = useId();
 
   useEffect(() => {
     const mast = mastRef.current;
@@ -40,25 +42,62 @@ export function SiteMast({ links = defaultLinks }: SiteMastProps) {
       observer.disconnect();
       window.removeEventListener("resize", sync);
     };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const close = () => setMenuOpen(false);
+    window.addEventListener("hashchange", close);
+    return () => window.removeEventListener("hashchange", close);
   }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   return (
     <>
-      <header className="mast" ref={mastRef}>
+      <header className={`mast${menuOpen ? " is-menu-open" : ""}`} ref={mastRef}>
         <MarketTape />
         <div className="site-header">
           <div className="container nav">
-            <Link className="brand" href="/">
+            <Link className="brand" href="/" onClick={() => setMenuOpen(false)}>
               Kapital
             </Link>
-            <nav className="nav-links" aria-label="Primary">
+            <button
+              type="button"
+              className="nav-toggle"
+              aria-expanded={menuOpen}
+              aria-controls={menuId}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <span className="nav-toggle-bars" aria-hidden="true" />
+              <span className="sr-only">{menuOpen ? "Close menu" : "Open menu"}</span>
+            </button>
+            <nav
+              id={menuId}
+              className={`nav-links${menuOpen ? " is-open" : ""}`}
+              aria-label="Primary"
+            >
               {links.map((link) =>
                 link.href.startsWith("/#") || link.href.startsWith("#") ? (
-                  <a key={link.href} href={link.href}>
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                  >
                     {link.label}
                   </a>
                 ) : (
-                  <Link key={link.href} href={link.href}>
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                  >
                     {link.label}
                   </Link>
                 ),

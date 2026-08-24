@@ -123,7 +123,7 @@ export function MarketPanel({
 
     const ratio = window.devicePixelRatio || 1;
     const width = canvas.clientWidth || 720;
-    const height = 320;
+    const height = canvas.clientHeight || 280;
     canvas.width = Math.round(width * ratio);
     canvas.height = Math.round(height * ratio);
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
