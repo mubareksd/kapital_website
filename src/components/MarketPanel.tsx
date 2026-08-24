@@ -44,6 +44,7 @@ export function MarketPanel({
   const [candles, setCandles] = useState<Candle[]>(initialCandles);
   const [chartType, setChartType] = useState<"line" | "candle">("line");
   const [loadingChart, setLoadingChart] = useState(false);
+  const [chartTick, setChartTick] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const skipFirstCandleFetch = useRef(initialCandles.length > 0);
   const symbol =
@@ -87,6 +88,16 @@ export function MarketPanel({
     }
     void loadCandles(symbol, range);
   }, [symbol, range, loadCandles]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      setChartTick((tick) => tick + 1);
+    });
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, []);
 
   const rows = useMemo(() => {
     const source = kind === "bond" ? bonds : equities;
@@ -229,7 +240,7 @@ export function MarketPanel({
       width - pad.right,
       height - 8,
     );
-  }, [candles, chartType, loadingChart]);
+  }, [candles, chartTick, chartType, loadingChart]);
 
   const downloadCsv = () => {
     const lines = [["Symbol", "Company", "Price (ETB)", "Change %", "Volume"].join(",")];
@@ -309,7 +320,7 @@ export function MarketPanel({
                 <option value="last_asc">Price low to high</option>
               </select>
             </label>
-            <button type="button" className="button button-secondary button-sm" onClick={downloadCsv}>
+            <button type="button" className="button button-secondary button-sm board-csv" onClick={downloadCsv}>
               Download CSV
             </button>
           </div>
@@ -320,14 +331,14 @@ export function MarketPanel({
             ) : rows.length === 0 ? (
               <p className="market-empty">No listings match this filter.</p>
             ) : (
-              <table className="board-table">
+              <table className="board-table board-table-live">
                 <thead>
                   <tr>
                     <th>Symbol</th>
-                    <th>Company</th>
+                    <th className="col-name">Company</th>
                     <th className="num">Price (ETB)</th>
                     <th className="num">Change</th>
-                    <th className="num">Volume</th>
+                    <th className="num col-volume">Volume</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -337,13 +348,21 @@ export function MarketPanel({
                       className={row.symbol === symbol ? "is-active" : undefined}
                       onClick={() => setPickedSymbol(row.symbol)}
                     >
-                      <td>
+                      <td data-label="Symbol">
                         <strong>{row.symbol}</strong>
                       </td>
-                      <td>{row.name}</td>
-                      <td className="num">{row.last_display}</td>
-                      <td className={`num dir-${row.direction}`}>{row.change_display}</td>
-                      <td className="num">{Number(row.volume || 0).toLocaleString()}</td>
+                      <td className="col-name" data-label="Company">
+                        {row.name}
+                      </td>
+                      <td className="num" data-label="Price">
+                        {row.last_display}
+                      </td>
+                      <td className={`num dir-${row.direction}`} data-label="Change">
+                        {row.change_display}
+                      </td>
+                      <td className="num col-volume" data-label="Volume">
+                        {Number(row.volume || 0).toLocaleString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -415,26 +434,36 @@ export function MarketPanel({
           </div>
 
           <div className="chart-table-wrap">
-            <table className="board-table">
+            <table className="board-table board-table-ohlc">
               <thead>
                 <tr>
                   <th>Date</th>
                   <th className="num">Open</th>
-                  <th className="num">High</th>
-                  <th className="num">Low</th>
+                  <th className="num col-ohlc-mid">High</th>
+                  <th className="num col-ohlc-mid">Low</th>
                   <th className="num">Close</th>
-                  <th className="num">Volume</th>
+                  <th className="num col-volume">Volume</th>
                 </tr>
               </thead>
               <tbody>
                 {[...candles].reverse().slice(0, 30).map((bar) => (
                   <tr key={String(bar.time)}>
-                    <td>{String(bar.time).slice(0, 10)}</td>
-                    <td className="num">{fmtPrice(bar.open)}</td>
-                    <td className="num">{fmtPrice(bar.high)}</td>
-                    <td className="num">{fmtPrice(bar.low)}</td>
-                    <td className="num">{fmtPrice(bar.close)}</td>
-                    <td className="num">{Number(bar.volume || 0).toLocaleString()}</td>
+                    <td data-label="Date">{String(bar.time).slice(0, 10)}</td>
+                    <td className="num" data-label="Open">
+                      {fmtPrice(bar.open)}
+                    </td>
+                    <td className="num col-ohlc-mid" data-label="High">
+                      {fmtPrice(bar.high)}
+                    </td>
+                    <td className="num col-ohlc-mid" data-label="Low">
+                      {fmtPrice(bar.low)}
+                    </td>
+                    <td className="num" data-label="Close">
+                      {fmtPrice(bar.close)}
+                    </td>
+                    <td className="num col-volume" data-label="Volume">
+                      {Number(bar.volume || 0).toLocaleString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
