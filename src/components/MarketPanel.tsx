@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MarketActivityStrip } from "@/components/MarketActivityStrip";
 import { useMarketData } from "@/components/MarketDataProvider";
 import { InstitutionMark } from "@/components/InstitutionMark";
 import type { Candle } from "@/lib/marlin/types";
@@ -267,6 +268,8 @@ export function MarketPanel({
 
   return (
     <div className="market-panel">
+      <MarketActivityStrip />
+
       <section id="board" className="section section-muted">
         <div className="container">
           <div className="section-head-row">

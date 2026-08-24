@@ -632,6 +632,70 @@ img {
   font-size: 0.9rem;
 }
 
+.section-activity {
+  border-top: 1px solid var(--line);
+}
+
+.activity-lead {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 36rem;
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.activity-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  padding: 1rem 1.05rem 1.1rem;
+  min-width: 0;
+}
+
+.activity-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.activity-value {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.activity-amount {
+  color: var(--ink);
+}
+
+.activity-currency {
+  color: var(--muted);
+  font-size: 0.55em;
+  letter-spacing: 0;
+}
+
+.activity-pending {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.activity-volume {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .market-panel .section-muted {
   background: color-mix(in srgb, var(--paper) 55%, transparent);
   border-top: 1px solid var(--line);
@@ -1017,6 +1081,10 @@ img {
     align-items: stretch;
   }
 
+  .activity-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .board-search,
   .board-sort,
   .board-csv {
@@ -1148,6 +1216,10 @@ img {
 
   .launch-row {
     grid-template-columns: 1fr;
+  }
+
+  .activity-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .board-table-live {

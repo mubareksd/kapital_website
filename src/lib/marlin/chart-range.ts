@@ -22,7 +22,7 @@ function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-function dayKey(date: Date): string {
+export function dayKey(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 

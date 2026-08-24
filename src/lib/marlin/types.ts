@@ -4,6 +4,7 @@ export type Quote = {
   last: number;
   change_pct: number;
   volume: number;
+  turnover: number;
   bid: number;
   ask: number;
   high: number;
@@ -25,6 +26,7 @@ export type PublicQuote = {
   change_display: string;
   direction: "up" | "down" | "flat";
   volume: number;
+  turnover: number;
   asset_class: string;
   asset_kind: "equity" | "bond";
   logo_url?: string | null;
@@ -37,6 +39,22 @@ export type Candle = {
   low: number;
   close: number;
   volume: number;
+  turnover: number;
+};
+
+export type ActivityBucket = {
+  value: number;
+  volume: number;
+};
+
+export type MarketActivity = {
+  today: ActivityBucket;
+  month: ActivityBucket;
+  year: ActivityBucket;
+  all: ActivityBucket;
+  listings: number;
+  from: string | null;
+  ready: boolean;
 };
 
 export type MarketStatus = {

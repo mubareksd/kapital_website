@@ -2,7 +2,13 @@ import { hasMarlinSession, marlinGetJson } from "./client";
 import { institutionLogoUrl, institutionName } from "../institutions";
 import { asList } from "./payload";
 import { filterCandlesByWindow, resolveChartRange } from "./chart-range";
-import type { Candle, MarketStatus, PublicQuote, Quote, TickerSnapshot } from "./types";
+import type {
+  Candle,
+  MarketStatus,
+  PublicQuote,
+  Quote,
+  TickerSnapshot,
+} from "./types";
 
 type CacheEntry<T> = { value: T; expiresAt: number };
 
@@ -195,6 +201,16 @@ export function mapQuotes(
           "vol",
           "lastTradeQuantity",
         ]) ?? 0,
+      turnover:
+        firstNumeric(stats, [
+          "totalTradedValue",
+          "totalTurnover",
+          "turnover",
+          "turnoverValue",
+          "tradedValue",
+          "valueTraded",
+          "totalValueTraded",
+        ]) ?? 0,
       bid,
       ask,
       high: firstPositiveNumeric(stats, ["high", "dayHigh"]) ?? 0,
@@ -353,6 +369,7 @@ async function refreshTickerSnapshot(): Promise<TickerSnapshot> {
       };
       snapshotHold = { value, freshUntil: Date.now() + cacheTtlMs() };
       startBackgroundRefresh();
+      void import("./activity").then((mod) => mod.warmMarketActivity());
       return value;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Market feed unavailable";
@@ -403,6 +420,7 @@ function toPublicTape(quotes: Quote[]): {
       change_display: `${pct > 0 ? "+" : ""}${pct.toFixed(2)}%`,
       direction,
       volume: quote.volume,
+      turnover: quote.turnover > 0 ? quote.turnover : quote.volume * last,
       asset_class: quote.asset_class,
       asset_kind: kind,
       logo_url: institutionLogoUrl(quote.symbol),
@@ -469,13 +487,35 @@ export function mapOhlcBars(rows: unknown): Candle[] {
     const close = Number(row.closePrice ?? row.close ?? 0) || 0;
     if (open <= 0 && high <= 0 && low <= 0 && close <= 0) continue;
 
+    const closePx = close > 0 ? close : open;
+    // Marlin OHLC often puts share quantity in `turnover` and leaves `volume` empty.
+    const quantity =
+      Number(
+        row.volume ??
+          row.tradedVolume ??
+          row.totalTradedQuantity ??
+          row.qty ??
+          row.turnover ??
+          row.tradesCount ??
+          0,
+      ) || 0;
+    const money =
+      Number(
+        row.turnoverValue ??
+          row.tradedValue ??
+          row.totalTradedValue ??
+          row.totalValueTraded ??
+          0,
+      ) || 0;
+
     candles.push({
       time: String(time),
       open: open > 0 ? open : close,
       high: high > 0 ? high : Math.max(open, close),
       low: low > 0 ? low : Math.min(open > 0 ? open : close, close),
-      close: close > 0 ? close : open,
-      volume: Number(row.turnover ?? row.turnoverValue ?? row.tradesCount ?? row.volume ?? 0) || 0,
+      close: closePx,
+      volume: quantity,
+      turnover: money > 0 ? money : quantity * closePx,
     });
   }
 
@@ -564,7 +604,8 @@ export async function getCandles(symbol: string, historyDays = 90): Promise<Cand
       if (!candles.length) continue;
       if (last > 0 && !ohlcAgreesWithLast(candles, last)) continue;
       emsCache.set(code, Number(securityId));
-      candleCache.set(cacheKey, { value: candles, expiresAt: Date.now() + 60_000 });
+      const ttl = days > 365 ? 10 * 60_000 : 60_000;
+      candleCache.set(cacheKey, { value: candles, expiresAt: Date.now() + ttl });
       return candles;
     }
 

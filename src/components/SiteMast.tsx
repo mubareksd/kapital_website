@@ -9,6 +9,7 @@ type SiteMastProps = {
 };
 
 const defaultLinks = [
+  { href: "/#activity", label: "Activity" },
   { href: "/#board", label: "Board" },
   { href: "/#charts", label: "Charts" },
   { href: "/#about", label: "About" },

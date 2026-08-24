@@ -27,11 +27,11 @@ export default async function Home() {
               holdings, signed in with your mobile number.
             </p>
             <div className="cta-row">
-              <a className="button button-primary" href="#board">
-                Open the board
+              <a className="button button-primary" href="#activity">
+                Market activity
               </a>
-              <a className="button button-secondary" href="#charts">
-                Price charts
+              <a className="button button-secondary" href="#board">
+                Open the board
               </a>
             </div>
           </div>
