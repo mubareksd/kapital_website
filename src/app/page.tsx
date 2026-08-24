@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MarketPanel } from "@/components/MarketPanel";
 
 export default function Home() {
   return (
@@ -9,6 +10,8 @@ export default function Home() {
             Kapital
           </Link>
           <nav className="nav-links" aria-label="Primary">
+            <a href="#board">Board</a>
+            <a href="#charts">Charts</a>
             <a href="#about">About</a>
             <a href="#features">Features</a>
             <a href="#launch">Launch</a>
@@ -29,11 +32,14 @@ export default function Home() {
               funding, and portfolio tools in one simple app.
             </p>
             <div className="cta-row">
-              <a className="button button-primary" href="mailto:support@kinet.et?subject=Kapital%20launch%20interest">
-                Contact us
+              <a className="button button-primary" href="#board">
+                Open the board
               </a>
-              <a className="button button-secondary" href="#launch">
-                Launch details
+              <a className="button button-secondary" href="#charts">
+                Price charts
+              </a>
+              <a className="button button-secondary" href="mailto:support@kinet.et?subject=Kapital%20launch%20interest">
+                Contact us
               </a>
             </div>
             <p className="subtle">
@@ -75,6 +81,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <MarketPanel />
 
       <section id="about" className="section">
         <div className="container two-up">
