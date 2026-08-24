@@ -1,18 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Candle, PublicQuote } from "@/lib/marlin/types";
-
-type TickerResponse = {
-  data: PublicQuote[];
-  equities?: PublicQuote[];
-  bonds?: PublicQuote[];
-  meta?: {
-    broker_connected?: boolean;
-    source?: string;
-    error?: string | null;
-  };
-};
+import { useMarketData } from "@/components/MarketDataProvider";
+import type { Candle } from "@/lib/marlin/types";
 
 function fmtPrice(value: number): string {
   const digits = value > 0 && value < 0.01 ? 4 : 2;
@@ -30,50 +20,40 @@ const RANGES = [
   { id: "this_year", label: "YTD" },
 ] as const;
 
-export function MarketPanel() {
-  const [equities, setEquities] = useState<PublicQuote[]>([]);
-  const [bonds, setBonds] = useState<PublicQuote[]>([]);
-  const [kind, setKind] = useState<"equity" | "bond">("equity");
+type ChartRangeId = (typeof RANGES)[number]["id"];
+
+type MarketPanelProps = {
+  initialSymbol?: string;
+  initialRange?: ChartRangeId;
+  initialCandles?: Candle[];
+};
+
+export function MarketPanel({
+  initialSymbol = "",
+  initialRange = "this_month",
+  initialCandles = [],
+}: MarketPanelProps) {
+  const { equities, bonds, meta } = useMarketData();
+  const [kind, setKind] = useState<"equity" | "bond">(
+    equities.length === 0 && bonds.length > 0 ? "bond" : "equity",
+  );
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("symbol");
-  const [symbol, setSymbol] = useState("");
-  const [range, setRange] = useState<(typeof RANGES)[number]["id"]>("this_month");
-  const [candles, setCandles] = useState<Candle[]>([]);
+  const [symbol, setSymbol] = useState(
+    initialSymbol || equities[0]?.symbol || bonds[0]?.symbol || "",
+  );
+  const [range, setRange] = useState<ChartRangeId>(initialRange);
+  const [candles, setCandles] = useState<Candle[]>(initialCandles);
   const [chartType, setChartType] = useState<"line" | "candle">("line");
-  const [status, setStatus] = useState("Connecting…");
-  const [loadingBoard, setLoadingBoard] = useState(true);
   const [loadingChart, setLoadingChart] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const skipFirstCandleFetch = useRef(true);
 
-  const loadTicker = useCallback(async () => {
-    try {
-      const res = await fetch("/api/market/ticker", { cache: "no-store" });
-      const json = (await res.json()) as TickerResponse;
-      const nextEquities = json.equities ?? json.data ?? [];
-      const nextBonds = json.bonds ?? [];
-      setEquities(nextEquities);
-      setBonds(nextBonds);
-      setError(json.meta?.error ?? null);
-      setStatus(
-        json.meta?.broker_connected
-          ? "Live ESX feed"
-          : json.meta?.error || "Feed offline",
-      );
-      setSymbol((current) => {
-        if (current) return current;
-        return nextEquities[0]?.symbol || nextBonds[0]?.symbol || "";
-      });
-      if (nextEquities.length === 0 && nextBonds.length > 0) {
-        setKind("bond");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load market board");
-      setStatus("Feed offline");
-    } finally {
-      setLoadingBoard(false);
-    }
-  }, []);
+  const status = meta.broker_connected
+    ? "Live ESX feed"
+    : meta.error || "Feed offline";
+  const error = meta.error;
+  const loadingBoard = false;
 
   const loadCandles = useCallback(async (code: string, nextRange: string) => {
     if (!code) {
@@ -101,29 +81,11 @@ export function MarketPanel() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    const kickoff = window.setTimeout(() => {
-      if (!cancelled) void loadTicker();
-    }, 0);
-    const timer = window.setInterval(() => {
-      if (!cancelled) void loadTicker();
-    }, 30_000);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(kickoff);
-      window.clearInterval(timer);
-    };
-  }, [loadTicker]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const kickoff = window.setTimeout(() => {
-      if (!cancelled) void loadCandles(symbol, range);
-    }, 0);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(kickoff);
-    };
+    if (skipFirstCandleFetch.current) {
+      skipFirstCandleFetch.current = false;
+      return;
+    }
+    void loadCandles(symbol, range);
   }, [symbol, range, loadCandles]);
 
   const rows = useMemo(() => {

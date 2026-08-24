@@ -1,7 +1,7 @@
 import { marlinConnected, marlinGetJson } from "./client";
 import { asList } from "./payload";
 import { filterCandlesByWindow, resolveChartRange } from "./chart-range";
-import type { Candle, MarketStatus, PublicQuote, Quote } from "./types";
+import type { Candle, MarketStatus, PublicQuote, Quote, TickerSnapshot } from "./types";
 
 type CacheEntry<T> = { value: T; expiresAt: number };
 
@@ -314,6 +314,32 @@ export async function getPublicTape(): Promise<{
     bonds,
     status: await getMarketStatus(),
   };
+}
+
+export async function loadTickerSnapshot(): Promise<TickerSnapshot> {
+  try {
+    const tape = await getPublicTape();
+    return {
+      data: tape.quotes,
+      equities: tape.equities,
+      bonds: tape.bonds,
+      meta: tape.status,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Market feed unavailable";
+    return {
+      data: [],
+      equities: [],
+      bonds: [],
+      meta: {
+        broker_connected: false,
+        source: "offline",
+        exchange: "ESX",
+        market: "MAINBOARD",
+        error: message,
+      },
+    };
+  }
 }
 
 export function mapOhlcBars(rows: unknown): Candle[] {

@@ -1,7 +1,18 @@
 import Link from "next/link";
 import { MarketPanel } from "@/components/MarketPanel";
+import { getCandlesForWindow, loadTickerSnapshot } from "@/lib/marlin/market";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const ticker = await loadTickerSnapshot();
+  const initialSymbol =
+    ticker.equities[0]?.symbol || ticker.bonds[0]?.symbol || "";
+  const initialRange = "this_month" as const;
+  const initialCandles = initialSymbol
+    ? (await getCandlesForWindow(initialSymbol, initialRange)).candles
+    : [];
+
   return (
     <main>
       <section className="hero">
@@ -31,7 +42,11 @@ export default function Home() {
         </div>
       </section>
 
-      <MarketPanel />
+      <MarketPanel
+        initialSymbol={initialSymbol}
+        initialRange={initialRange}
+        initialCandles={initialCandles}
+      />
 
       <section id="about" className="section">
         <div className="container about-block">

@@ -45,3 +45,10 @@ export type MarketStatus = {
   market: string;
   error: string | null;
 };
+
+export type TickerSnapshot = {
+  data: PublicQuote[];
+  equities: PublicQuote[];
+  bonds: PublicQuote[];
+  meta: MarketStatus;
+};

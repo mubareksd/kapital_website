@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Sora } from "next/font/google";
+import { MarketDataProvider } from "@/components/MarketDataProvider";
 import { SiteMast } from "@/components/SiteMast";
+import { loadTickerSnapshot } from "@/lib/marlin/market";
 import "./globals.css";
 
 const sans = Sora({
@@ -41,12 +43,18 @@ export const viewport: Viewport = {
   themeColor: "#0D5C4D",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const ticker = await loadTickerSnapshot();
+
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`}>
       <body>
-        <SiteMast />
-        {children}
+        <MarketDataProvider initial={ticker}>
+          <SiteMast />
+          {children}
+        </MarketDataProvider>
       </body>
     </html>
   );

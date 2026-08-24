@@ -1,17 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useMarketData } from "@/components/MarketDataProvider";
 import type { PublicQuote } from "@/lib/marlin/types";
-
-type TickerResponse = {
-  data?: PublicQuote[];
-  equities?: PublicQuote[];
-  meta?: {
-    broker_connected?: boolean;
-    source?: string;
-    error?: string | null;
-  };
-};
 
 function TapeItems({ quotes }: { quotes: PublicQuote[] }) {
   return (
@@ -33,39 +23,10 @@ function TapeItems({ quotes }: { quotes: PublicQuote[] }) {
 }
 
 export function MarketTape() {
-  const [quotes, setQuotes] = useState<PublicQuote[]>([]);
-  const [live, setLive] = useState(false);
-  const [source, setSource] = useState("offline");
-
-  const refresh = useCallback(async () => {
-    try {
-      const response = await fetch("/api/market/ticker", { cache: "no-store" });
-      if (!response.ok) return;
-      const json = (await response.json()) as TickerResponse;
-      const next = json.equities ?? json.data ?? [];
-      setQuotes(next);
-      setLive(Boolean(json.meta?.broker_connected));
-      setSource(String(json.meta?.source || "offline"));
-    } catch {
-      // Keep last snapshot on the tape.
-    }
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const kickoff = window.setTimeout(() => {
-      if (!cancelled) void refresh();
-    }, 0);
-    const timer = window.setInterval(() => {
-      if (!cancelled) void refresh();
-    }, 30_000);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(kickoff);
-      window.clearInterval(timer);
-    };
-  }, [refresh]);
-
+  const { equities, meta } = useMarketData();
+  const quotes = equities;
+  const live = Boolean(meta.broker_connected);
+  const source = String(meta.source || "offline");
   const seconds = Math.max(18, quotes.length * 2.4);
 
   return (
