@@ -27,6 +27,7 @@ export type PublicQuote = {
   volume: number;
   asset_class: string;
   asset_kind: "equity" | "bond";
+  logo_url?: string | null;
 };
 
 export type Candle = {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMarketData } from "@/components/MarketDataProvider";
+import { InstitutionMark } from "@/components/InstitutionMark";
 import type { PublicQuote } from "@/lib/marlin/types";
 
 function TapeItems({ quotes }: { quotes: PublicQuote[] }) {
@@ -12,7 +13,12 @@ function TapeItems({ quotes }: { quotes: PublicQuote[] }) {
           : "flat";
         return (
           <span key={`${quote.symbol}-${quote.last_display}`} className={`tape-item dir-${dir}`}>
-            <strong className="inst-symbol">{quote.symbol}</strong>
+            <InstitutionMark
+              symbol={quote.symbol}
+              name={quote.name}
+              logoUrl={quote.logo_url}
+              size="sm"
+            />
             <span className="tape-px">{quote.last_display}</span>
             <span className="tape-chg">{quote.change_display}</span>
           </span>

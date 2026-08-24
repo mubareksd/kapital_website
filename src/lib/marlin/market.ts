@@ -1,4 +1,5 @@
 import { hasMarlinSession, marlinGetJson } from "./client";
+import { institutionLogoUrl, institutionName } from "../institutions";
 import { asList } from "./payload";
 import { filterCandlesByWindow, resolveChartRange } from "./chart-range";
 import type { Candle, MarketStatus, PublicQuote, Quote, TickerSnapshot } from "./types";
@@ -395,7 +396,7 @@ function toPublicTape(quotes: Quote[]): {
 
     const item: PublicQuote = {
       symbol: quote.symbol,
-      name: quote.name,
+      name: institutionName(quote.symbol, quote.name),
       last,
       last_display: fmtPrice(last),
       change_pct: pct,
@@ -404,6 +405,7 @@ function toPublicTape(quotes: Quote[]): {
       volume: quote.volume,
       asset_class: quote.asset_class,
       asset_kind: kind,
+      logo_url: institutionLogoUrl(quote.symbol),
     };
 
     if (kind === "bond") bonds.push(item);

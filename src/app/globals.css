@@ -164,6 +164,66 @@ img {
   border-right: 1px solid var(--line);
 }
 
+.inst-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.inst-logo {
+  flex: 0 0 auto;
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+  border-radius: 0.2rem;
+  background: #fff;
+}
+
+.inst-mark-sm .inst-logo {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.inst-mark-lg .inst-logo {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.inst-text {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.inst-symbol {
+  letter-spacing: 0.04em;
+}
+
+.inst-name {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.board-table .inst-mark {
+  gap: 0.55rem;
+}
+
+.chart-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+}
+
+.chart-heading .chart-name {
+  font-size: 0.65em;
+  font-family: var(--font-sans), "Segoe UI", sans-serif;
+  letter-spacing: 0;
+}
+
 .tape-px,
 .tape-chg {
   font-variant-numeric: tabular-nums;
@@ -1148,7 +1208,7 @@ img {
 /* —— 4K / TV —— */
 @media (min-width: 2400px) {
   :root {
-    --content-max: 110rem;
+    --content-max: 140rem;
     --page-gutter: clamp(2.5rem, 5vw, 5rem);
     --section-y: 6.5rem;
     --tap: 3.25rem;
@@ -1178,6 +1238,21 @@ img {
   .tape-item,
   .tape-empty {
     font-size: 0.95rem;
+  }
+
+  .inst-logo {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+
+  .inst-mark-sm .inst-logo {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  .inst-mark-lg .inst-logo {
+    width: 2.9rem;
+    height: 2.9rem;
   }
 
   .hero {

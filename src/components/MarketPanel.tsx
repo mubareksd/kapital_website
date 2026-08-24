@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMarketData } from "@/components/MarketDataProvider";
+import { InstitutionMark } from "@/components/InstitutionMark";
 import type { Candle } from "@/lib/marlin/types";
 
 function fmtPrice(value: number): string {
@@ -349,7 +350,12 @@ export function MarketPanel({
                       onClick={() => setPickedSymbol(row.symbol)}
                     >
                       <td data-label="Symbol">
-                        <strong>{row.symbol}</strong>
+                        <InstitutionMark
+                          symbol={row.symbol}
+                          name={row.name}
+                          logoUrl={row.logo_url}
+                          size="md"
+                        />
                       </td>
                       <td className="col-name" data-label="Company">
                         {row.name}
@@ -379,10 +385,15 @@ export function MarketPanel({
               <p className="section-label">Price charts</p>
               <h2>
                 {activeQuote ? (
-                  <>
-                    {activeQuote.symbol}{" "}
+                  <span className="chart-heading">
+                    <InstitutionMark
+                      symbol={activeQuote.symbol}
+                      name={activeQuote.name}
+                      logoUrl={activeQuote.logo_url}
+                      size="lg"
+                    />
                     <span className="muted chart-name">{activeQuote.name}</span>
-                  </>
+                  </span>
                 ) : (
                   "Select a listing"
                 )}
