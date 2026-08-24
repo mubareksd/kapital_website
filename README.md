@@ -28,7 +28,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Public API (browser → Next.js)
 
-- `GET /api/market/ticker` — equities/bonds board payload
-- `GET /api/market/candles/:symbol?range=this_month` — OHLC window
+- `GET /api/market/ticker` - equities/bonds board payload
+- `GET /api/market/candles/:symbol?range=this_month` - OHLC window
 
 These routes call the proxy with investor credentials on the server.

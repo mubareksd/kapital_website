@@ -70,7 +70,7 @@ img {
   margin-inline: auto;
 }
 
-/* —— Mast —— */
+/* --- Mast --- */
 .mast {
   position: fixed;
   top: 0;
@@ -344,7 +344,7 @@ img {
   color: var(--accent);
 }
 
-/* —— Hero —— */
+/* --- Hero --- */
 .hero {
   position: relative;
   isolation: isolate;
@@ -467,7 +467,7 @@ img {
   }
 }
 
-/* —— Buttons —— */
+/* --- Buttons --- */
 .button {
   display: inline-flex;
   align-items: center;
@@ -506,7 +506,7 @@ img {
   font-size: 0.88rem;
 }
 
-/* —— Sections —— */
+/* --- Sections --- */
 .section {
   padding: var(--section-y) 0;
 }
@@ -592,7 +592,7 @@ img {
   align-items: center;
 }
 
-/* —— Market board / charts —— */
+/* --- Market board / charts --- */
 .section-head-row {
   display: flex;
   flex-wrap: wrap;
@@ -855,7 +855,7 @@ img {
   margin: 0.5rem 0 0;
 }
 
-/* —— Legal —— */
+/* --- Legal --- */
 .legal-page {
   min-height: 100vh;
 }
@@ -923,7 +923,7 @@ img {
   }
 }
 
-/* —— Phone —— */
+/* --- Phone --- */
 @media (max-width: 640px) {
   .tape-badge {
     padding: 0 0.55rem;
@@ -1113,7 +1113,7 @@ img {
   }
 }
 
-/* —— Large phone / small tablet —— */
+/* --- Large phone / small tablet --- */
 @media (min-width: 641px) and (max-width: 900px) {
   .nav-toggle {
     display: inline-flex;
@@ -1164,7 +1164,7 @@ img {
   }
 }
 
-/* —— Tablet landscape / small desktop —— */
+/* --- Tablet landscape / small desktop --- */
 @media (min-width: 901px) and (max-width: 1199px) {
   :root {
     --content-max: 64rem;
@@ -1181,7 +1181,7 @@ img {
   }
 }
 
-/* —— Desktop —— */
+/* --- Desktop --- */
 @media (min-width: 1200px) {
   :root {
     --content-max: 72rem;
@@ -1189,7 +1189,7 @@ img {
   }
 }
 
-/* —— Wide / 2K —— */
+/* --- Wide / 2K --- */
 @media (min-width: 1600px) {
   :root {
     --content-max: 84rem;
@@ -1205,7 +1205,7 @@ img {
   }
 }
 
-/* —— 4K / TV —— */
+/* --- 4K / TV --- */
 @media (min-width: 2400px) {
   :root {
     --content-max: 140rem;

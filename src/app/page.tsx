@@ -24,7 +24,7 @@ export default async function Home() {
             <h1>Trade ESX from your phone.</h1>
             <p className="lead">
               Live Ethiopian Securities Exchange quotes, tickets, cash, and
-              holdings — signed in with your mobile number.
+              holdings, signed in with your mobile number.
             </p>
             <div className="cta-row">
               <a className="button button-primary" href="#board">
@@ -56,7 +56,7 @@ export default async function Home() {
           <div>
             <h2>Preparing the first public version.</h2>
             <p>
-              Early access, partnerships, or rollout questions — write the team
+              Early access, partnerships, or rollout questions: write the team
               directly.
             </p>
           </div>

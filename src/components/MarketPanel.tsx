@@ -314,7 +314,7 @@ export function MarketPanel({
             <label className="board-sort">
               <span>Sort</span>
               <select value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="symbol">Symbol A–Z</option>
+                <option value="symbol">Symbol A-Z</option>
                 <option value="change_desc">Change high to low</option>
                 <option value="change_asc">Change low to high</option>
                 <option value="last_desc">Price high to low</option>
