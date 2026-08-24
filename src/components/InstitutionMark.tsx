@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   institutionLogoUrl,
   institutionName,
@@ -22,17 +21,21 @@ export function InstitutionMark({
   const code = symbol.toUpperCase();
   const src = logoUrl ?? institutionLogoUrl(code);
   const label = name || institutionName(code);
+  const px = size === "lg" ? 38 : size === "sm" ? 18 : 28;
 
   return (
     <span className={`inst-mark inst-mark-${size}`}>
       {src ? (
-        <Image
+        // Local SVG/PNG marks are tiny; next/image SVG support needs extra config.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
           className="inst-logo"
           src={src}
           alt=""
-          width={size === "lg" ? 38 : size === "sm" ? 18 : 28}
-          height={size === "lg" ? 38 : size === "sm" ? 18 : 28}
-          unoptimized
+          width={px}
+          height={px}
+          loading="lazy"
+          decoding="async"
         />
       ) : null}
       <span className="inst-text">
