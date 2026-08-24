@@ -5,7 +5,12 @@ export default function Home() {
   return (
     <main>
       <section className="hero">
-        <div className="hero-plane" aria-hidden="true" />
+        <div
+          className="hero-media"
+          style={{ backgroundImage: "url(/images/site/hero-bg.jpg)" }}
+          aria-hidden="true"
+        />
+        <div className="hero-shade" aria-hidden="true" />
         <div className="container hero-stage">
           <div className="hero-copy">
             <p className="hero-brand">Kapital</p>
@@ -23,16 +28,6 @@ export default function Home() {
               </a>
             </div>
           </div>
-          <figure className="hero-visual">
-            <img
-              src="/images/site/hero-app.svg"
-              alt=""
-              width={280}
-              height={560}
-              decoding="async"
-              fetchPriority="high"
-            />
-          </figure>
         </div>
       </section>
 
